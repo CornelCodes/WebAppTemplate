@@ -1,0 +1,50 @@
+﻿@model WebAppTemplate.Controllers.AuthViewModel
+@{
+}
+
+<div class="container-fluid" id="auth-page">
+    @if (!string.IsNullOrWhiteSpace(Model.Error))
+    {
+        <div class="text-center" id="error-display">
+            <h3 class="text-danger">@Model.Error?</h3>
+        </div>
+    }
+    <div class="row text-center">
+        <div class="col-6">
+            <h1>Register</h1>
+            <div class="container-fluid" id="register-form">
+                <form action="/Auth/Register" method="post">
+                    <label class="form-label">
+                        Email
+                        <input class="form-control" type="email" name="Email" value="@Model.Email" placeholder="Enter email..." />
+                    </label>
+                    @*add toggle view password feature*@
+                    <label class="form-label">
+                        Password
+                        <input class="form-control" type="password" name="Password" value="@Model.Password" placeholder="Enter password..." />
+                    </label>
+                    <button type="submit" class="btn btn-primary">Register</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-6">
+            <h1>Login</h1>
+            <div class="container-fluid" id="register-form">
+                @*create javascript form validation*@
+                <form action="/Auth/Login" method="post">
+                    <label class="form-label">
+                        Email
+                        <input class="form-control" type="email" name="Email" value="@Model.Email" placeholder="Enter email..." />
+                    </label>
+
+                    @*add toggle view password feature*@
+                    <label class="form-label">
+                        Password
+                        <input class="form-control" type="password" name="Password" value="@Model.Password" placeholder="Enter password..." />
+                    </label>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

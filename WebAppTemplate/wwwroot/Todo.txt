@@ -1,0 +1,21 @@
+﻿Web app skeleton template essentials
+
+Send emails
+- Invoices
+- Messages 
+- etc.
+
+
+
+1. Authorization and Authentication
+- Login & Register
+- Profile updating
+
+2. EFCore and Data access
+- Scaffolding
+
+3. Error logging and handling
+- Redirects and error display for developers and regular users
+- Email notifications with trace logs
+
+4. Admin dashboard
