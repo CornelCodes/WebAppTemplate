@@ -33,6 +33,9 @@
             </div>
         </nav>
     </header>
+    <div id="layout-top" class="p-3" style="background-color: black; color: white;">
+        <h3>{{activePage}}</h3>
+    </div>
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -46,6 +49,23 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script>
+        var layout = new Vue({
+            el: "#layout-top",
+            data() {
+                return {
+                    activePage: null,
+                }
+            },
+            beforeMount() {
+                var activePage = window.location.pathname.replace("/", "").trim();
+                activePage === "" ? activePage = "Home" : activePage;
+                console.log("Mounted", activePage);
+                this.activePage = activePage;
+            }
+        })
+    </script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
