@@ -1,3 +1,4 @@
+using DAL.AppContext;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System;
 
@@ -15,6 +16,7 @@ namespace WebAppTemplate
 
             //builder.Services.AddDbContext<ajpContext>();
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddDbContext<AppDbContext>();
 
 
             //cookie authentication

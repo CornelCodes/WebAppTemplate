@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using DAL.AppContext;
+using DAL.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using System.Security.Claims;
 
 namespace WebAppTemplate.Controllers
@@ -9,8 +13,12 @@ namespace WebAppTemplate.Controllers
     [Route("[controller]")]
     public class AuthController : Controller
     {
-        //REMEMBER TO NORMALISE EMAILS
+        public AppDbContext dbContext { get; set; }
 
+        public AuthController(AppDbContext _dbContext)
+        {
+            dbContext = _dbContext;
+        }
 
         //login and register page
         [HttpGet("")]
@@ -25,38 +33,55 @@ namespace WebAppTemplate.Controllers
         }
 
         [HttpPost("[action]")]
-        public IActionResult Login(AuthViewModel vm)
+        public async Task<IActionResult> Login(AuthViewModel vm)
         {
             try
             {
                 vm.Email = vm.Email.ToLower();
-                //verify user exists
-                //validate password
-                var success = true;
-                if (success)
+                var error = "";
+
+                //get user
+                var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == vm.Email);
+
+                //validate user exists
+                if (user != null)
                 {
-                    var claims = new List<Claim>();
-                    claims.Add(new Claim("id", "69"));
-                    claims.Add(new Claim("role", "admin"));
+                    if (user.Password != vm.Password)
+                    {
+                        error = "Incorrect password";
+                        return RedirectToAction("Index", vm);
+                    }
 
-                    var claimsIdentity = new ClaimsIdentity(
-                        claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    if (string.IsNullOrWhiteSpace(error))
+                    {
+                        var claims = new List<Claim>();
+                        var role = user.Id == 1 ? "admin" : "user";
+                        claims.Add(new Claim("id", user.Id.ToString()));
+                        claims.Add(new Claim("role", role));
 
-                    var authProperties = new AuthenticationProperties();
-                    authProperties.IsPersistent = true;
-                    authProperties.AllowRefresh = true;
-                    authProperties.ExpiresUtc = DateTime.Now.AddMonths(3);
+                        var claimsIdentity = new ClaimsIdentity(
+                            claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-                    HttpContext.SignInAsync(
-                        CookieAuthenticationDefaults.AuthenticationScheme,
-                        new ClaimsPrincipal(claimsIdentity),
-                        authProperties).Wait();
+                        var authProperties = new AuthenticationProperties();
+                        authProperties.IsPersistent = true;
+                        authProperties.AllowRefresh = true;
+                        authProperties.ExpiresUtc = DateTime.Now.AddMonths(3);
 
-                    //sign in or redirect to auth with error
-                    return RedirectToAction("Index", "Home");
+                        HttpContext.SignInAsync(
+                            CookieAuthenticationDefaults.AuthenticationScheme,
+                            new ClaimsPrincipal(claimsIdentity),
+                            authProperties).Wait();
+
+                        //sign in or redirect to auth with error
+                        return RedirectToAction("Index", "Home");
+                    }
+                }
+                else
+                {
+                    error = $"User with email {vm.Email} not found";
                 }
 
-                vm.Error = "Login failed";
+                vm.Error = error;
 
                 return RedirectToAction("Index", vm);
             }
@@ -85,19 +110,27 @@ namespace WebAppTemplate.Controllers
         }
 
         [HttpPost("[action]")]
-        public IActionResult Register(AuthViewModel vm)
+        public async Task<IActionResult> Register(AuthViewModel vm)
         {
             try
             {
                 vm.Email = vm.Email.ToLower();
-                var success = true;
+                var user = new User()
+                {
+                    Email = vm.Email.ToLower(),
+                    Password = vm.Password,
+                };
 
-                if (success)
+                await dbContext.Users.AddAsync(user);
+                await dbContext.SaveChangesAsync();
+
+                if (!string.IsNullOrWhiteSpace(user.Id.ToString()))
                 {
                     //create claim
                     var claims = new List<Claim>();
-                    claims.Add(new Claim("id", "69"));
-                    claims.Add(new Claim("role", "admin"));
+                    var role = user.Id == 1 ? "admin" : "user";
+                    claims.Add(new Claim("id", user.Id.ToString()));
+                    claims.Add(new Claim("role", role));
 
                     var claimsIdentity = new ClaimsIdentity(
                         claims, CookieAuthenticationDefaults.AuthenticationScheme);
